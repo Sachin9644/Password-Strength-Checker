@@ -1,17 +1,23 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
 
-public class PasswordStrengthChecker extends JFrame {
+public class Testfile extends JFrame {
     private JPasswordField passwordField;
     private JProgressBar progressBar;
     private JPanel panel;
     private JLabel lengthLabel, uppercaseLabel, lowercaseLabel, numberLabel, symbolLabel;
     private JButton toggleVisibilityButton;
     private boolean isPasswordVisible = false;
-    private JLabel strengthLabel; // New label to show strength message
+    private JLabel strengthLabel;
+    private Image backgroundImage;
+    private JLabel backgroundLabel;
 
-    public PasswordStrengthChecker() {
+    public Testfile() {
         setTitle("Password Strength Checker");
 
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -27,27 +33,43 @@ public class PasswordStrengthChecker extends JFrame {
         headerLabel.setPreferredSize(new Dimension(getWidth(), 50));
         add(headerLabel, BorderLayout.NORTH);
 
-        // Background Panel with Image
-        JLabel background = new JLabel();
-        background.setIcon(new ImageIcon(new ImageIcon("bckgd.png").getImage().getScaledInstance(
-                Toolkit.getDefaultToolkit().getScreenSize().width,
-                Toolkit.getDefaultToolkit().getScreenSize().height,
-                Image.SCALE_SMOOTH)));
-        background.setLayout(new GridBagLayout());
-        add(background);
+        // Load background image
+        try {
+            backgroundImage = ImageIO.read(new File("bckgd.png"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        // White Panel in Center
-        panel = new JPanel();
-        panel.setBackground(Color.WHITE);
+        // Background Panel
+        backgroundLabel = new JLabel(new ImageIcon(backgroundImage));
+        backgroundLabel.setLayout(new GridBagLayout());
+        add(backgroundLabel, BorderLayout.CENTER);
+
+        // Create the frosted glass effect panel
+        panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2d.setColor(new Color(25, 25, 25, 160));  // Dark translucent background
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+                g2d.dispose();
+            }
+        };
         panel.setLayout(new GridBagLayout());
+        panel.setOpaque(false);
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.BLACK, 2),
-                BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 100), 1),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
         updatePanelSize();
 
+        // Resize listeners
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
                 updatePanelSize();
+                scaleBackgroundImage();
             }
         });
 
@@ -56,7 +78,7 @@ public class PasswordStrengthChecker extends JFrame {
         gbc.gridy = 0;
         gbc.insets = new Insets(10, 5, 10, 5);
 
-        // Central Box Heading
+        // Central Heading
         JLabel centralHeading = new JLabel("Check Strength", SwingConstants.CENTER);
         centralHeading.setFont(new Font("Arial", Font.BOLD, 20));
         centralHeading.setOpaque(true);
@@ -65,13 +87,16 @@ public class PasswordStrengthChecker extends JFrame {
         centralHeading.setPreferredSize(new Dimension(200, 30));
         panel.add(centralHeading, gbc);
 
+        // Password Field
         gbc.gridy++;
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel label = new JLabel("Enter Password:");
         passwordPanel.add(label);
-        
+
         passwordField = new JPasswordField(35);
         passwordField.setFont(new Font("Arial", Font.PLAIN, 18));
+        passwordField.setBackground(Color.WHITE);
+        passwordField.setForeground(Color.BLACK);
         passwordField.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
                 checkStrength(new String(passwordField.getPassword()));
@@ -79,7 +104,6 @@ public class PasswordStrengthChecker extends JFrame {
         });
         passwordPanel.add(passwordField);
 
-        // Eye Icon Button
         toggleVisibilityButton = new JButton("👁");
         toggleVisibilityButton.addActionListener(e -> {
             isPasswordVisible = !isPasswordVisible;
@@ -88,6 +112,7 @@ public class PasswordStrengthChecker extends JFrame {
         passwordPanel.add(toggleVisibilityButton);
         panel.add(passwordPanel, gbc);
 
+        // Progress Bar
         gbc.gridy++;
         progressBar = new JProgressBar(0, 100);
         progressBar.setStringPainted(true);
@@ -95,6 +120,7 @@ public class PasswordStrengthChecker extends JFrame {
         progressBar.setValue(0);
         panel.add(progressBar, gbc);
 
+        // Criteria Labels
         gbc.gridy++;
         JPanel criteriaPanel = new JPanel(new GridLayout(1, 5, 10, 10));
         lengthLabel = new JLabel("❌ Length");
@@ -114,13 +140,13 @@ public class PasswordStrengthChecker extends JFrame {
         criteriaPanel.add(symbolLabel);
         panel.add(criteriaPanel, gbc);
 
-        // Strength Label
+        // Strength Text
         gbc.gridy++;
         strengthLabel = new JLabel("Strength: None", SwingConstants.CENTER);
         strengthLabel.setFont(new Font("Arial", Font.BOLD, 16));
         panel.add(strengthLabel, gbc);
 
-        background.add(panel);
+        backgroundLabel.add(panel);  // Attach frosted panel to background
     }
 
     private void updatePanelSize() {
@@ -130,6 +156,13 @@ public class PasswordStrengthChecker extends JFrame {
         ));
         panel.revalidate();
         panel.repaint();
+    }
+
+    private void scaleBackgroundImage() {
+        if (backgroundImage != null) {
+            ImageIcon scaledIcon = new ImageIcon(backgroundImage.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH));
+            backgroundLabel.setIcon(scaledIcon);
+        }
     }
 
     private void checkStrength(String password) {
@@ -175,27 +208,19 @@ public class PasswordStrengthChecker extends JFrame {
             symbolLabel.setForeground(Color.RED);
         }
 
-        // Update progress bar and strength label
-        int strengthValue = (criteria * 100) / 5; // 5 criteria
+        int strengthValue = (criteria * 100) / 5;
         progressBar.setValue(strengthValue);
         String strengthText = getStrengthLabel(criteria);
         progressBar.setString(strengthText);
-
-        // Update strength message and color
         strengthLabel.setText("Strength: " + strengthText);
         updateStrengthColor(criteria);
     }
 
     private String getStrengthLabel(int criteria) {
-        if (criteria <= 2) {
-            return "Too Weak";
-        } else if (criteria <= 3) {
-            return "Weak";
-        } else if (criteria <= 4) {
-            return "Moderate";
-        } else {
-            return "Strong";
-        }
+        if (criteria <= 2) return "Too Weak";
+        else if (criteria <= 3) return "Weak";
+        else if (criteria <= 4) return "Moderate";
+        else return "Strong";
     }
 
     private void updateStrengthColor(int criteria) {
@@ -204,19 +229,19 @@ public class PasswordStrengthChecker extends JFrame {
             strengthLabel.setForeground(new Color(255, 0, 0, 200));
         } else if (criteria <= 3) {
             progressBar.setForeground(Color.ORANGE);
-            strengthLabel.setForeground(Color.orange);
+            strengthLabel.setForeground(Color.ORANGE);
         } else if (criteria <= 4) {
             progressBar.setForeground(new Color(228, 255, 26));
             strengthLabel.setForeground(new Color(244, 255, 45, 175));
         } else {
             progressBar.setForeground(Color.GREEN);
-            strengthLabel.setForeground(Color.green);
+            strengthLabel.setForeground(Color.GREEN);
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new PasswordStrengthChecker().setVisible(true);
+            new Testfile().setVisible(true);
         });
     }
 }
