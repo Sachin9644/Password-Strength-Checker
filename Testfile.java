@@ -19,40 +19,35 @@ public class Testfile extends JFrame {
 
     public Testfile() {
         setTitle("Password Strength Checker");
-
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Header Label
         JLabel headerLabel = new JLabel("Password Strength Checker", SwingConstants.CENTER);
         headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
         headerLabel.setOpaque(true);
         headerLabel.setBackground(new Color(3, 21, 47, 255));
-        headerLabel.setForeground(Color.white);
-        headerLabel.setPreferredSize(new Dimension(getWidth(), 50));
+        headerLabel.setForeground(Color.WHITE);
+        headerLabel.setPreferredSize(new Dimension(getWidth(), 40));
         add(headerLabel, BorderLayout.NORTH);
 
-        // Load background image
         try {
             backgroundImage = ImageIO.read(new File("bckgd.png"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // Background Panel
         backgroundLabel = new JLabel(new ImageIcon(backgroundImage));
         backgroundLabel.setLayout(new GridBagLayout());
         add(backgroundLabel, BorderLayout.CENTER);
 
-        // Create the frosted glass effect panel
         panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setColor(new Color(25, 25, 25, 160));  // Dark translucent background
+                g2d.setColor(new Color(255, 255, 255, 75));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
                 g2d.dispose();
             }
@@ -60,12 +55,10 @@ public class Testfile extends JFrame {
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(255, 255, 255, 100), 1),
-                BorderFactory.createEmptyBorder(20, 20, 20, 20)
-        ));
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 120), 1),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)));
         updatePanelSize();
 
-        // Resize listeners
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
                 updatePanelSize();
@@ -78,19 +71,20 @@ public class Testfile extends JFrame {
         gbc.gridy = 0;
         gbc.insets = new Insets(10, 5, 10, 5);
 
-        // Central Heading
         JLabel centralHeading = new JLabel("Check Strength", SwingConstants.CENTER);
         centralHeading.setFont(new Font("Arial", Font.BOLD, 20));
         centralHeading.setOpaque(true);
-        centralHeading.setBackground(Color.BLACK);
-        centralHeading.setForeground(Color.WHITE);
+        centralHeading.setBackground(new Color(255, 255, 255, 80));
+        centralHeading.setForeground(Color.BLACK);
         centralHeading.setPreferredSize(new Dimension(200, 30));
         panel.add(centralHeading, gbc);
 
-        // Password Field
         gbc.gridy++;
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        passwordPanel.setOpaque(false);
         JLabel label = new JLabel("Enter Password:");
+        label.setFont(new Font("Arial", Font.BOLD, 20));
+        label.setForeground(Color.WHITE);
         passwordPanel.add(label);
 
         passwordField = new JPasswordField(35);
@@ -104,108 +98,135 @@ public class Testfile extends JFrame {
         });
         passwordPanel.add(passwordField);
 
-        toggleVisibilityButton = new JButton("👁");
+        toggleVisibilityButton = new JButton("\uD83D\uDC41");
+        passwordPanel.add(toggleVisibilityButton);
         toggleVisibilityButton.addActionListener(e -> {
             isPasswordVisible = !isPasswordVisible;
             passwordField.setEchoChar(isPasswordVisible ? (char) 0 : '*');
         });
-        passwordPanel.add(toggleVisibilityButton);
         panel.add(passwordPanel, gbc);
 
-        // Progress Bar
         gbc.gridy++;
-        progressBar = new JProgressBar(0, 100);
+        progressBar = new JProgressBar(0, 100) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                String text = getString();
+                if (text != null) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                    g2.setFont(getFont());
+                    FontMetrics fm = g2.getFontMetrics();
+                    int x = (getWidth() - fm.stringWidth(text)) / 2;
+                    int y = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                    Color textColor;
+                    switch (text.toLowerCase()) {
+                        case "too weak":
+                        case "weak":
+                        case "moderate":
+                        case "strong":
+                        default:
+                            textColor = Color.BLACK;
+                            break;
+                    }
+                    g2.setColor(textColor);
+                    g2.drawString(text, x, y);
+                }
+            }
+        };
         progressBar.setStringPainted(true);
         progressBar.setPreferredSize(new Dimension(400, 30));
         progressBar.setValue(0);
+        progressBar.setString("0%");
         panel.add(progressBar, gbc);
 
-        // Criteria Labels
         gbc.gridy++;
         JPanel criteriaPanel = new JPanel(new GridLayout(1, 5, 10, 10));
-        lengthLabel = new JLabel("❌ Length");
-        lengthLabel.setForeground(Color.RED);
-        uppercaseLabel = new JLabel("❌ Uppercase");
-        uppercaseLabel.setForeground(Color.RED);
-        lowercaseLabel = new JLabel("❌ Lowercase");
-        lowercaseLabel.setForeground(Color.RED);
-        numberLabel = new JLabel("❌ Numbers");
-        numberLabel.setForeground(Color.RED);
-        symbolLabel = new JLabel("❌ Symbols");
-        symbolLabel.setForeground(Color.RED);
-        criteriaPanel.add(lengthLabel);
-        criteriaPanel.add(uppercaseLabel);
-        criteriaPanel.add(lowercaseLabel);
-        criteriaPanel.add(numberLabel);
-        criteriaPanel.add(symbolLabel);
+        criteriaPanel.setOpaque(false);
+        lengthLabel = new JLabel("\u274C Length");
+        uppercaseLabel = new JLabel("\u274C Uppercase");
+        lowercaseLabel = new JLabel("\u274C Lowercase");
+        numberLabel = new JLabel("\u274C Numbers");
+        symbolLabel = new JLabel("\u274C Symbols");
+
+        JLabel[] allLabels = { lengthLabel, uppercaseLabel, lowercaseLabel, numberLabel, symbolLabel };
+        for (JLabel lbl : allLabels) {
+            lbl.setForeground(Color.WHITE);
+            criteriaPanel.add(lbl);
+        }
         panel.add(criteriaPanel, gbc);
 
-        // Strength Text
         gbc.gridy++;
         strengthLabel = new JLabel("Strength: None", SwingConstants.CENTER);
         strengthLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        strengthLabel.setForeground(Color.WHITE);
         panel.add(strengthLabel, gbc);
 
-        backgroundLabel.add(panel);  // Attach frosted panel to background
+        backgroundLabel.add(panel);
     }
 
     private void updatePanelSize() {
         panel.setPreferredSize(new Dimension(
                 (int) (getWidth() * 0.5),
-                (int) (getHeight() * 0.4)
-        ));
+                (int) (getHeight() * 0.4)));
         panel.revalidate();
         panel.repaint();
     }
 
     private void scaleBackgroundImage() {
         if (backgroundImage != null) {
-            ImageIcon scaledIcon = new ImageIcon(backgroundImage.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH));
+            ImageIcon scaledIcon = new ImageIcon(
+                    backgroundImage.getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH));
             backgroundLabel.setIcon(scaledIcon);
         }
     }
 
     private void checkStrength(String password) {
         int criteria = 0;
+
         if (password.length() >= 8) {
             criteria++;
-            lengthLabel.setText("✔ Length");
+            lengthLabel.setText("\u2714 Length");
             lengthLabel.setForeground(Color.GREEN);
         } else {
-            lengthLabel.setText("❌ Length");
+            lengthLabel.setText("\u274C Length");
             lengthLabel.setForeground(Color.RED);
         }
+
         if (password.matches(".*[A-Z].*")) {
             criteria++;
-            uppercaseLabel.setText("✔ Uppercase");
+            uppercaseLabel.setText("\u2714 Uppercase");
             uppercaseLabel.setForeground(Color.GREEN);
         } else {
-            uppercaseLabel.setText("❌ Uppercase");
-            uppercaseLabel.setForeground(Color.RED);
+            uppercaseLabel.setText("\u274C Uppercase");
+            uppercaseLabel.setForeground(Color.WHITE);
         }
+
         if (password.matches(".*[a-z].*")) {
             criteria++;
-            lowercaseLabel.setText("✔ Lowercase");
+            lowercaseLabel.setText("\u2714 Lowercase");
             lowercaseLabel.setForeground(Color.GREEN);
         } else {
-            lowercaseLabel.setText("❌ Lowercase");
-            lowercaseLabel.setForeground(Color.RED);
+            lowercaseLabel.setText("\u274C Lowercase");
+            lowercaseLabel.setForeground(Color.WHITE);
         }
+
         if (password.matches(".*[0-9].*")) {
             criteria++;
-            numberLabel.setText("✔ Numbers");
+            numberLabel.setText("\u2714 Numbers");
             numberLabel.setForeground(Color.GREEN);
         } else {
-            numberLabel.setText("❌ Numbers");
-            numberLabel.setForeground(Color.RED);
+            numberLabel.setText("\u274C Numbers");
+            numberLabel.setForeground(Color.WHITE);
         }
+
         if (password.matches(".*[^A-Za-z0-9].*")) {
             criteria++;
-            symbolLabel.setText("✔ Symbols");
+            symbolLabel.setText("\u2714 Symbols");
             symbolLabel.setForeground(Color.GREEN);
         } else {
-            symbolLabel.setText("❌ Symbols");
-            symbolLabel.setForeground(Color.RED);
+            symbolLabel.setText("\u274C Symbols");
+            symbolLabel.setForeground(Color.WHITE);
         }
 
         int strengthValue = (criteria * 100) / 5;
@@ -217,25 +238,33 @@ public class Testfile extends JFrame {
     }
 
     private String getStrengthLabel(int criteria) {
-        if (criteria <= 2) return "Too Weak";
-        else if (criteria <= 3) return "Weak";
-        else if (criteria <= 4) return "Moderate";
-        else return "Strong";
+        if (criteria <= 2)
+            return "Too Weak";
+        else if (criteria <= 3)
+            return "Weak";
+        else if (criteria <= 4)
+            return "Moderate";
+        else
+            return "Strong";
     }
 
     private void updateStrengthColor(int criteria) {
         if (criteria <= 2) {
-            progressBar.setForeground(Color.RED);
-            strengthLabel.setForeground(new Color(255, 0, 0, 200));
+            progressBar.setForeground(new Color(252, 32, 32));
+            strengthLabel.setForeground(new Color(252, 32, 32));
+            strengthLabel.setToolTipText("Too Weak: Add more character types and length.");
         } else if (criteria <= 3) {
-            progressBar.setForeground(Color.ORANGE);
-            strengthLabel.setForeground(Color.ORANGE);
+            progressBar.setForeground(new Color(255, 109, 46));
+            strengthLabel.setForeground(new Color(255, 109, 46));
+            strengthLabel.setToolTipText("Weak: Try adding symbols or uppercase letters.");
         } else if (criteria <= 4) {
-            progressBar.setForeground(new Color(228, 255, 26));
-            strengthLabel.setForeground(new Color(244, 255, 45, 175));
+            progressBar.setForeground(new Color(255, 251, 35));
+            strengthLabel.setForeground(new Color(255, 251, 35));
+            strengthLabel.setToolTipText("Moderate: Improve by using all character types.");
         } else {
-            progressBar.setForeground(Color.GREEN);
-            strengthLabel.setForeground(Color.GREEN);
+            progressBar.setForeground(new Color(61, 255, 47));
+            strengthLabel.setForeground(new Color(61, 255, 47));
+            strengthLabel.setToolTipText("Strong: Great password!");
         }
     }
 
