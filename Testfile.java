@@ -22,22 +22,21 @@ public class Testfile extends JFrame {
         String lower = "abcdefghijklmnopqrstuvwxyz";
         String digits = "0123456789";
         String symbols = "!@#$%^&*()-_+=<>?";
-    
+
         String allChars = upper + lower + digits + symbols;
         StringBuilder password = new StringBuilder();
-    
+
         password.append(upper.charAt((int)(Math.random() * upper.length())));
         password.append(lower.charAt((int)(Math.random() * lower.length())));
         password.append(digits.charAt((int)(Math.random() * digits.length())));
         password.append(symbols.charAt((int)(Math.random() * symbols.length())));
-    
+
         for (int i = 0; i < 8; i++) {
             password.append(allChars.charAt((int)(Math.random() * allChars.length())));
         }
-    
+
         return password.toString();
     }
-    
 
     public Testfile() {
         setTitle("Password Strength Checker");
@@ -45,13 +44,17 @@ public class Testfile extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JLabel headerLabel = new JLabel("Password Strength Checker", SwingConstants.CENTER);
-        headerLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        headerLabel.setOpaque(true);
-        headerLabel.setBackground(new Color(3, 21, 47, 255));
-        headerLabel.setForeground(Color.WHITE);
-        headerLabel.setPreferredSize(new Dimension(getWidth(), 40));
-        add(headerLabel, BorderLayout.NORTH);
+        // === Top Panel for Heading ===
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new GridBagLayout());
+        topPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10)); // top/bottom padding
+        topPanel.setBackground(new Color(3, 21, 47));  // Dark blue for contrast
+        JLabel heading = new JLabel("Password Strength Checker", SwingConstants.CENTER);
+        heading.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        heading.setForeground(new Color(255, 255, 255));  // White text for contrast
+        topPanel.add(heading);
+
+        add(topPanel, BorderLayout.NORTH);
 
         try {
             backgroundImage = ImageIO.read(new File("bckgd.png"));
@@ -173,21 +176,21 @@ public class Testfile extends JFrame {
 
         JLabel[] allLabels = { lengthLabel, uppercaseLabel, lowercaseLabel, numberLabel, symbolLabel };
         for (JLabel lbl : allLabels) {
-            lbl.setForeground(Color.WHITE);
+            lbl.setForeground(Color.white);
             criteriaPanel.add(lbl);
         }
         panel.add(criteriaPanel, gbc);
 
         gbc.gridy++;
         strengthLabel = new JLabel("Strength: None", SwingConstants.CENTER);
-        strengthLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        strengthLabel.setFont(  new Font("Segoe UI", Font.BOLD, 16));
         strengthLabel.setForeground(Color.WHITE);
         panel.add(strengthLabel, gbc);
 
         // Add "Let Me Help You Find One" button just below
         gbc.gridy++;
         JButton suggestButton = new JButton("Let Me Help You Find One");
-        suggestButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        suggestButton.setFont(  new Font("Segoe UI", Font.BOLD, 14));
         suggestButton.addActionListener(e -> {
             String strongPassword = generateStrongPassword();
             passwordField.setText(strongPassword);
@@ -233,7 +236,7 @@ public class Testfile extends JFrame {
             uppercaseLabel.setForeground(Color.GREEN);
         } else {
             uppercaseLabel.setText("\u274C Uppercase");
-            uppercaseLabel.setForeground(Color.WHITE);
+            uppercaseLabel.setForeground(Color.red);
         }
 
         if (password.matches(".*[a-z].*")) {
@@ -242,7 +245,7 @@ public class Testfile extends JFrame {
             lowercaseLabel.setForeground(Color.GREEN);
         } else {
             lowercaseLabel.setText("\u274C Lowercase");
-            lowercaseLabel.setForeground(Color.WHITE);
+            lowercaseLabel.setForeground(Color.RED);
         }
 
         if (password.matches(".*[0-9].*")) {
@@ -251,7 +254,7 @@ public class Testfile extends JFrame {
             numberLabel.setForeground(Color.GREEN);
         } else {
             numberLabel.setText("\u274C Numbers");
-            numberLabel.setForeground(Color.WHITE);
+            numberLabel.setForeground(Color.RED);
         }
 
         if (password.matches(".*[^A-Za-z0-9].*")) {
@@ -260,7 +263,7 @@ public class Testfile extends JFrame {
             symbolLabel.setForeground(Color.GREEN);
         } else {
             symbolLabel.setText("\u274C Symbols");
-            symbolLabel.setForeground(Color.WHITE);
+            symbolLabel.setForeground(Color.red);
         }
 
         int strengthValue = (criteria * 100) / 5;
@@ -286,19 +289,19 @@ public class Testfile extends JFrame {
         if (criteria <= 2) {
             progressBar.setForeground(new Color(252, 32, 32));
             strengthLabel.setForeground(new Color(252, 32, 32));
-            strengthLabel.setToolTipText("Too Weak: Add more character types and length.");
+             
         } else if (criteria <= 3) {
             progressBar.setForeground(new Color(255, 109, 46));
             strengthLabel.setForeground(new Color(255, 109, 46));
-            strengthLabel.setToolTipText("Weak: Try adding symbols or uppercase letters.");
+          
         } else if (criteria <= 4) {
             progressBar.setForeground(new Color(255, 251, 35));
             strengthLabel.setForeground(new Color(255, 251, 35));
-            strengthLabel.setToolTipText("Moderate: Improve by using all character types.");
+             
         } else {
             progressBar.setForeground(new Color(61, 255, 47));
             strengthLabel.setForeground(new Color(61, 255, 47));
-            strengthLabel.setToolTipText("Strong: Great password!");
+            
         }
     }
 
