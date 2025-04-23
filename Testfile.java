@@ -17,6 +17,28 @@ public class Testfile extends JFrame {
     private Image backgroundImage;
     private JLabel backgroundLabel;
 
+    private String generateStrongPassword() {
+        String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lower = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String symbols = "!@#$%^&*()-_+=<>?";
+    
+        String allChars = upper + lower + digits + symbols;
+        StringBuilder password = new StringBuilder();
+    
+        password.append(upper.charAt((int)(Math.random() * upper.length())));
+        password.append(lower.charAt((int)(Math.random() * lower.length())));
+        password.append(digits.charAt((int)(Math.random() * digits.length())));
+        password.append(symbols.charAt((int)(Math.random() * symbols.length())));
+    
+        for (int i = 0; i < 8; i++) {
+            password.append(allChars.charAt((int)(Math.random() * allChars.length())));
+        }
+    
+        return password.toString();
+    }
+    
+
     public Testfile() {
         setTitle("Password Strength Checker");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -161,6 +183,18 @@ public class Testfile extends JFrame {
         strengthLabel.setFont(new Font("Arial", Font.BOLD, 16));
         strengthLabel.setForeground(Color.WHITE);
         panel.add(strengthLabel, gbc);
+
+        // Add "Let Me Help You Find One" button just below
+        gbc.gridy++;
+        JButton suggestButton = new JButton("Let Me Help You Find One");
+        suggestButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        suggestButton.addActionListener(e -> {
+            String strongPassword = generateStrongPassword();
+            passwordField.setText(strongPassword);
+            checkStrength(strongPassword);
+            JOptionPane.showMessageDialog(this, "Here’s a strong password suggestion:\n" + strongPassword);
+        });
+        panel.add(suggestButton, gbc);
 
         backgroundLabel.add(panel);
     }
